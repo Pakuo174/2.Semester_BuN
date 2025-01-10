@@ -1,8 +1,5 @@
 package utils;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.*;
 
 /**
@@ -37,41 +34,69 @@ public class MySerialization {
         return receivedInts;
     }
 
+    /**
+     * Diese Methode dient dazu, eine Datei und einen OutputStream entgegenzunehmen.
+     * <p>
+     * Es wird:
+     * 1. Die Länge der Datei mit einem DataOutputStream gesendet.
+     * 2. Der Inhalt der Datei Byte für Byte (oder Zeichen für Zeichen) über den OutputStream gesendet.
+     *
+     * @param file die Datei, die serialisiert wird
+     * @param os   der OutputStream, in den die Daten geschrieben werden
+     * @return
+     * @throws IOException falls ein I/O-Fehler auftritt
+     */
     public void serializeFile(File file, OutputStream os) throws IOException {
 
-        // InputStream to read from file
+        // beziehen von den Bytes aus der file
         InputStream is = new FileInputStream(file);
 
-        // write file length to server
+        // stream erstellen - länge der file zu schreiben + Inhalt
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeLong(file.length());
-        // System.out.println("client sent: " + file.length());
 
-        // read content from file and write it to server
-        for (long i = 0; i < file.length(); i++) {
+        //read file byte for byte (letter for letter) and send back to server
+        for (int i = 0; i < file.length(); i++){
             dos.write(is.read());
         }
-    }
-    public File deserializeFile(InputStream is, String fileName) throws IOException {
 
-        // read file length
+    }
+
+    /**
+     * Diese Methode dient dazu, einen InputStream und einen Dateinamen entgegenzunehmen und eine Datei zu deserialisieren.
+     *
+     * Es wird:
+     * 1. Die Länge der Datei gelesen, damit die Methode weiß, wie viele Bytes sie lesen muss.
+     * 2. In einer Schleife wird Byte für Byte aus dem InputStream (dis) gelesen und in eine neue Datei geschrieben.
+     * 3. Ein FileOutputStream (fos) wird verwendet, um die Daten in die Zieldatei zu schreiben.
+     *
+     * @param is Der InputStream, der die zu deserialisierenden Daten enthält.
+     * @param filename Der Name der Zieldatei, die erstellt wird.
+     * @return Die erstellte Datei.
+     * @throws IOException Falls ein I/O-Fehler auftritt.
+     */
+    public File deserializeFile(InputStream is, String filename) throws IOException {
+
         DataInputStream dis = new DataInputStream(is);
         long fileLength = dis.readLong();
-        // System.out.println("file length from server: " + fileLength);
 
-
-        // file and FileOutputStream to write received data to file
-        File file = new File(fileName);
+        // Zieldatei erstellen
+        File file = new File(filename);
 
         FileOutputStream fos = new FileOutputStream(file);
 
-        // read from client and write to file
-        for (long i = 0; i < fileLength; i++) {
+        // Byte-für-Byte aus dem InputStream lesen und in die Datei schreiben
+        for (int i = 0; i < fileLength; i++){
             fos.write(dis.read());
         }
 
         return file;
     }
+
+
+
+
+
 
 
 

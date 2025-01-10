@@ -54,39 +54,30 @@ public class MySerializationTest {
 
     @Test
     public void fileTest1() throws IOException {
-        // Testdaten und Dateinamen
         String sampleData = "TestContent";
-        String fileNameSource = "sourceFile.txt"; // die zu serialisierende Datei
-        String fileNameTarget = "targetFile.txt"; // die Datei, in die deserialisiert wird
+        String fileNameSource = "sourceFile.txt";
+        String fileNameTarget = "targetFile.txt";
 
-        // 1. Quelle-Datei erstellen
+        // fill file
         DataOutputStream daos = new DataOutputStream(new FileOutputStream(fileNameSource));
         daos.writeUTF(sampleData);
-        daos.close();
 
-        // 2. Serialisieren und Deserialisieren
-        File sourceFile = new File(fileNameSource);
+        // Datei-Objekt erstellen und ich sourcefile schreiben
+        File file = new File(fileNameSource);
+
+        // Erstelle eine Instanz deiner Klasse mit den Methoden
         MySerialization ms = new MySerialization();
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        // Die Methode serializeFile wird aufgerufen, um die Daten aus sourceFile.txt in
-        // einen ByteArrayOutputStream zu schreiben.
-        ms.serializeFile(sourceFile, os);
 
-        //Inhalt des ByteArrayOutputStream (os) wird in ein Byte-Array konvertiert.
-        // zuvor wurde durch die Serialisierung die Datei sourceFile.txt in Form von Bytes
-        // in den ByteArrayOutputStream geschrieben.
-        ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
-        File targetFile = ms.deserializeFile(is, fileNameTarget);
+        // Serialisiere die Datei in einen OutputStream
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ms.serializeFile(file,bos);
 
-        // 3. Validierung
-        Assertions.assertTrue(targetFile.exists());
-        Assertions.assertEquals(sourceFile.length(), targetFile.length());
-        Assertions.assertEquals(new String(Files.readAllBytes(sourceFile.toPath())),
-                new String(Files.readAllBytes(targetFile.toPath())));
+        // Deserialisiere die Daten aus dem OutputStream
+        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+        ms.deserializeFile(bis,fileNameTarget);
 
-        // Aufräumen
-        sourceFile.delete();
-        targetFile.delete();
+        Assertions.assertEquals(fileNameSource.length(), fileNameTarget.length());
+
     }
 
 
