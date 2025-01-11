@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.file.Files;
 
 public class MySerializationTest {
@@ -79,6 +81,50 @@ public class MySerializationTest {
         Assertions.assertEquals(fileNameSource.length(), fileNameTarget.length());
 
     }
+
+    // Die Datenübertragung erfolgt vollständig als Byte-Stream.
+    // Dies ist die Standardweise, wie Sockets Daten senden und empfangen.
+    @Test
+    public void testServerSide() throws IOException {
+
+        ServerSocket server = new ServerSocket(7777);
+        Socket socket = server.accept();
+
+        // empfange die Bytes des Outputstreams
+        InputStream is = socket.getInputStream();
+
+        // create empty file
+        DataOutputStream daos = new DataOutputStream(new FileOutputStream("targetFile.txt"));
+
+        MySerialization ms = new MySerialization();
+        ms.deserializeFile(is, "targetFile.txt");
+
+        socket.close();
+    }
+
+    // Die Datenübertragung erfolgt vollständig als Byte-Stream.
+    // Dies ist die Standardweise, wie Sockets Daten senden und empfangen.
+    @Test
+    public void testClientSide() throws IOException {
+        String sampleData = "TestContent6666";
+        String fileNameSource = "sourceFile.txt";
+
+        // fill file
+        DataOutputStream daos = new DataOutputStream(new FileOutputStream(fileNameSource));
+        daos.writeUTF(sampleData);
+
+        // file exists - lets stream it
+        File file = new File(fileNameSource);
+        MySerialization ms = new MySerialization();
+
+        Socket socket = new Socket("localhost", 7777);
+        OutputStream os = socket.getOutputStream();
+        ms.serializeFile(file, os);
+
+        socket.close();
+    }
+
+
 
 
 
