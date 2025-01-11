@@ -1,5 +1,7 @@
 package sfs_simpleFileServer;
 
+import utils.MySerialization;
+
 import java.io.*;
 
 public class SimpleFileServerClient {
@@ -39,7 +41,27 @@ public class SimpleFileServerClient {
         System.out.println("command received from server: " + commandFromServer);
         String fileNameFromServer = dis.readUTF();
         System.out.println("requested file name received from server: " + fileNameFromServer);
+
+        // GET request succeeded, save file
+        if (commandFromServer == 1) this.handlePUT(fileName);
+
+        // GET request did not succeed, output ERROR received from server
+        if (commandFromServer == 2) this.handleERROR();
+
     }
+    public void handlePUT(String fileName) throws IOException {
+        MySerialization ms = new MySerialization();
+        ms.deserializeFile(is, rootDirectory + fileName);
+    }
+
+    public void handleERROR() throws IOException {
+        DataInputStream dis = new DataInputStream(is);
+        int errorCode = dis.readInt();
+        String errorMessage = dis.readUTF();
+        System.out.println("error code received from server: " + errorCode);
+        System.out.println("error message received from server: " + errorMessage);
+    }
+
 
     private void writeHeader(DataOutputStream dos, byte command, String fileName) throws IOException {
         dos.writeByte(VERSION_NUMBER);
@@ -47,10 +69,35 @@ public class SimpleFileServerClient {
         dos.writeUTF(fileName);
     }
 
-    public void putFile(String fileName){
+    public void putFile(String putFileName) throws IOException {
 
+        DataOutputStream dos = new DataOutputStream(os);
+        File file = new File(rootDirectory + putFileName);
 
+        // write PUT_PDU
+        this.writeHeader(dos, PUT_PDU, putFileName);  // write header
+        MySerialization ms = new MySerialization();
+        ms.serializeFile(file, os);  // write file
+
+        // read and output answer from server
+        DataInputStream dis = new DataInputStream(is);
+        byte versionFromServer = dis.readByte();
+        System.out.println("version received from server:" + versionFromServer);
+        byte commandFromServer = dis.readByte();
+        System.out.println("command received from server:" + commandFromServer);
+        String fileNameFromServer = dis.readUTF();
+        System.out.println("file name received from server: " + fileNameFromServer);
+
+        if (commandFromServer == OK_PDU) this.handleOK();
+
+        if (commandFromServer == ERROR_PDU) this.handleERROR();
     }
+
+
+    public void handleOK() throws IOException {
+        System.out.println("request successful");
+    }
+
 
 
 }

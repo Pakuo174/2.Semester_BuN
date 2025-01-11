@@ -22,7 +22,6 @@ public class testSFS {
         sfsClient.getFile(GET_FILE_NAME);
         File file = new File(rootDirName + "/" + GET_FILE_NAME);
         Assertions.assertTrue((file.exists()));
-
     }
 
     @Test
