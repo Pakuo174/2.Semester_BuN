@@ -8,7 +8,7 @@ public class SimpleFileServerClient {
     private InputStream is; // vom Server emfpangen
     private OutputStream os; // zum Server senden
     final byte VERSION_NUMBER = 1;
-    public String rootDirectory  = "tests/test_files_client/";
+    public String rootDirectory;
 
     // PDU Typen von 0x00 bis 0x03
     final byte GET_PDU = 0x00;
@@ -49,6 +49,12 @@ public class SimpleFileServerClient {
         if (commandFromServer == 2) this.handleERROR();
 
     }
+    private void writeHeader(DataOutputStream dos, byte command, String fileName) throws IOException {
+        dos.writeByte(VERSION_NUMBER);
+        dos.writeByte(command);
+        dos.writeUTF(fileName);
+    }
+
     public void handlePUT(String fileName) throws IOException {
         MySerialization ms = new MySerialization();
         ms.deserializeFile(is, rootDirectory + fileName);
@@ -60,13 +66,6 @@ public class SimpleFileServerClient {
         String errorMessage = dis.readUTF();
         System.out.println("error code received from server: " + errorCode);
         System.out.println("error message received from server: " + errorMessage);
-    }
-
-
-    private void writeHeader(DataOutputStream dos, byte command, String fileName) throws IOException {
-        dos.writeByte(VERSION_NUMBER);
-        dos.writeByte(command);
-        dos.writeUTF(fileName);
     }
 
     public void putFile(String putFileName) throws IOException {
